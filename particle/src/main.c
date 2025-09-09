@@ -9,7 +9,7 @@ typedef struct {
     float x;
     float y;
 } Vector2D;
- 
+
 typedef struct {
     int id;
     float mass;
@@ -38,7 +38,7 @@ void particle_info_dump(Particle *p, int id){
                 p[id].acceleration.x, p[id].acceleration.y);
 }
 
-// Randomize particle positions within 0 <= x <= 100, 0 <= y <= 100
+// randomize particle positions within 0 <= x <= 100, 0 <= y <= 100
 void scatter_particles(ParticleSystem W){
     for (int i = 0; i<W.number_of_particles; i++){
         int x = rrand(0,100);
@@ -51,6 +51,20 @@ void scatter_particles(ParticleSystem W){
 void set_position(Particle p, float x, float y){
     p.position.x = x;
     p.position.y = y;
+}
+
+// apply force to particle in the x or y direction in newtons
+void apply_force(Particle p, float x, float y){
+    p.acceleration.x = x/p.mass;
+    p.acceleration.y = y/p.mass;
+    while ((p.acceleration.x > 0) || (p.acceleration.y > 0)){
+        p.velocity.x += p.acceleration.x;
+        p.velocity.y += p.acceleration.y;
+        p.position.x += p.velocity.x;
+        p.position.y += p.velocity.y;
+        p.acceleration.x -= 1;
+        p.acceleration.y -= 1;
+    }
 }
 
 float distance(Particle p1, Particle p2){
@@ -69,7 +83,7 @@ int main(int argc, char** argv){
 
     W.number_of_particles = 2;
     // }
-    
+
     W.clk = 0;
 
     if (W.number_of_particles < 1){
@@ -81,6 +95,7 @@ int main(int argc, char** argv){
     for (int i = 0; i<W.number_of_particles; i++){
         particles[i].id = i;
         particles[i].radius = default_particle_radius;
+        particles[i].mass = default_particle_mass;
     }
 
     W.p = particles;
