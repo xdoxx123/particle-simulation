@@ -48,6 +48,11 @@ void scatter_particles(ParticleSystem W){
     }
 }
 
+void set_position(Particle p, float x, float y){
+    p.position.x = x;
+    p.position.y = y;
+}
+
 float distance(Particle p1, Particle p2){
     return sqrtf(powf(p2.position.x-p1.position.x,2) + powf(p2.position.y-p1.position.y,2));
 }
@@ -57,8 +62,14 @@ int main(int argc, char** argv){
 
     ParticleSystem W;
     W.isRunning = true;
+
+    // general "config" {
     float default_particle_radius = 1;
+    float default_particle_mass = 1;
+
     W.number_of_particles = 2;
+    // }
+    
     W.clk = 0;
 
     if (W.number_of_particles < 1){
@@ -81,8 +92,20 @@ int main(int argc, char** argv){
         sleep(1);
         W.clk += 1;
         printf("\033cnumber_of_particles: %d\n", W.number_of_particles);
-        for (int i = 0; i<W.number_of_particles; i++)
+
+        set_position(W.p[0], 1, 0);
+        set_position(W.p[1], 2, 0);
+
+        // Each particle loop
+        for (int i = 0; i<W.number_of_particles; i++){
+            // Collision checking
+            for (int j = 0; j<W.number_of_particles; j++){
+                if ((i != j) && (distance(W.p[i],W.p[j]) < default_particle_radius+1)){
+                    printf("\nParticle %d collided with particle %d\n",W.p[i].id,W.p[j].id);
+                }
+            }
             particle_info_dump(W.p, i);
+        }
     }
 
     free(particles);
