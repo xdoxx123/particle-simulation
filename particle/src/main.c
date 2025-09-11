@@ -48,23 +48,24 @@ void scatter_particles(ParticleSystem W){
     }
 }
 
+void update_particles(Particle *p){
+    p->velocity.x += p->acceleration.x;
+    p->velocity.y += p->acceleration.y;
+    p->position.x += p->velocity.x;
+    p->position.y += p->velocity.y;
+    p->acceleration.x = 0;
+    p->acceleration.y = 0;
+}
+
 void set_position(Particle p, float x, float y){
     p.position.x = x;
     p.position.y = y;
 }
 
 // apply force to particle in the x or y direction in newtons
-void apply_force(Particle p, float x, float y){
-    p.acceleration.x = x/p.mass;
-    p.acceleration.y = y/p.mass;
-    while ((p.acceleration.x > 0) || (p.acceleration.y > 0)){
-        p.velocity.x += p.acceleration.x;
-        p.velocity.y += p.acceleration.y;
-        p.position.x += p.velocity.x;
-        p.position.y += p.velocity.y;
-        p.acceleration.x -= 1;
-        p.acceleration.y -= 1;
-    }
+void apply_force(Particle *p, float x, float y){
+    p->acceleration.x = x/p->mass;
+    p->acceleration.y = y/p->mass;
 }
 
 float distance(Particle p1, Particle p2){
@@ -79,9 +80,10 @@ int main(int argc, char** argv){
 
     // general "config" {
     float default_particle_radius = 1;
-    float default_particle_mass = 1;
+    float default_particle_mass = 1; 
+    float default_particle_drag = 10; // in newtons
 
-    W.number_of_particles = 2;
+    W.number_of_particles = 1;
     // }
 
     W.clk = 0;
@@ -108,18 +110,38 @@ int main(int argc, char** argv){
         W.clk += 1;
         printf("\033cnumber_of_particles: %d\n", W.number_of_particles);
 
-        set_position(W.p[0], 1, 0);
-        set_position(W.p[1], 2, 0);
+        if (W.clk == 2){
+            apply_force(&W.p[0], 50, 0);
+        }
 
-        // Each particle loop
+        // each particle loop
         for (int i = 0; i<W.number_of_particles; i++){
-            // Collision checking
+            update_particles(&W.p[i]);
+
+            // collision checking
             for (int j = 0; j<W.number_of_particles; j++){
                 if ((i != j) && (distance(W.p[i],W.p[j]) < default_particle_radius+1)){
                     printf("\nParticle %d collided with particle %d\n",W.p[i].id,W.p[j].id);
                 }
             }
             particle_info_dump(W.p, i);
+
+            // particle drag
+            if (W.p[i].velocity.x > 0)
+                W.p[i].acceleration.x -= default_particle_drag;
+
+            if (W.p[i].velocity.x <= 0){
+                W.p[i].acceleration.x = 0;
+                W.p[i].velocity.x = 0;
+            }
+
+            if (W.p[i].velocity.y > 0)
+                W.p[i].acceleration.y -= default_particle_drag;
+
+            if (W.p[i].velocity.y <= 0){
+                W.p[i].acceleration.y = 0;
+                W.p[i].velocity.y = 0;
+            } 
         }
     }
 
