@@ -104,7 +104,11 @@ int main(int argc, char** argv){
 
     // initial particle scatter
     //scatter_particles(W);
+    if (W.number_of_particles >= 100){
+        printf("[WARNING] this many particles will cause spam in terminal.");
+        sleep(2);
 
+    };
     while (W.isRunning) {
         sleep(1);
         W.clk += 1;
